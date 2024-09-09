@@ -6,7 +6,7 @@ The code contains the cloudformation templates which will create the S3Bucket an
 
 The AWS Lambda code is written in Python and the source code is available in the Python folder , this is pacakaged as a zip packagae with the dependency. The code uses boto3 . Python folder contain the Lambdacode in the file named lambda_function.py . If you cahnge the source code you can create the zip package , the directory is named python . Navigate to the Project directory cd Python
 
-Create a new directory named package install the noto3 dependency mkdir package pip install --target ./package boto3
+Create a new directory named package install the boto3 dependency mkdir package pip install --target ./package boto3
 
 Create a .zip file with the installed libraries at the root project cd package zip -r ../my_deployment_package.zip .
 
