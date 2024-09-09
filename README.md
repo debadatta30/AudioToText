@@ -1,5 +1,6 @@
 # AudioToText
-This code converts an audio file to text transcript using a serveless architectutre which use the flow , An audio file uploadee to Amazon S3 which invokes an event to trigger a AWS Lambda which uses Amazon Transcribe to conver the audio file to text transcript.You can use this to capture the meeting details in transcipt and later use for analysis. The Architecture diagram shown below:
+This code converts an audio file to text transcript using a serveless architectutre which use the below flow:
+An audio file uploaded to Amazon S3 which invokes an event to trigger a AWS Lambda, Lambda uses Amazon Transcribe to convert the audio file to text transcript.You can use this to capture the meeting details in transcipt and later use for analysis. The Architecture diagram shown below:
 ![image](https://github.com/user-attachments/assets/eb7057dc-656c-4df0-b8e5-3c6d01c45c47)
 
 The code contains the cloudformation templates which will create the S3Bucket and event notication on file upload of mp3 , you can extend to other files with the suffix option a, Lambda Role and  AWS Lambda Function which will process the file from S3 and put the transcript out to the S3Bucket 
