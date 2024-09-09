@@ -25,25 +25,16 @@ Parameters:
     Default: Lambda-Policy-AudioText
   S3BucketName:
     Type: String
-    Default: AudioText
+    MinLength: '3'
+    MaxLength: '255'
+    Description: The name of the bucket to upload audofile and invoke lambda on upload of file
+    Default: audiotext
   LambdaBucketName:
     Type: String
     MinLength: '3'
     MaxLength: '255'
-    Description: The name of the bucket where object  need to be download
-    Default: Lambda-AudioText-Bucket
-  KeyName:
-    Type: String
-    MinLength: '3'
-    MaxLength: '255'
-    Description: The name of the bucket where object  need to be download
-    Default: prompt.txt
-  KeyReview:
-    Type: String
-    MinLength: '3'
-    MaxLength: '255'
-    Description: The name of the bucket where object  need to be download
-    Default: review.txt
+    Description: The name of the bucket lambda code exist
+    Default: lambdacodebucket
 Resources:
   TranscriptS3:
     Type: AWS::S3::Bucket
@@ -130,7 +121,7 @@ Resources:
       Role: !GetAtt 'LambdaRole.Arn'
       Timeout: 480
       Code:
-        S3Bucket: LambdaBucketName
+        S3Bucket: !Ref LambdaBucketName
         S3Key: my_deployment_package.zip
                 
     
