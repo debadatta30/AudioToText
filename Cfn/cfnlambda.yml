@@ -9,26 +9,29 @@ Parameters:
     MaxLength: '64'
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9_-]*'
     Description: The name of the Lambda function to be deployed
-    Default: Lambda-Bedrock-Function
+    Default: Lambda-AudioText-Function
   LambdaRoleName:
     Type: String
     MinLength: '1'
     MaxLength: '64'
     AllowedPattern: '[\w+=,.@-]+'
     Description: The name of the IAM role used as the Lambda execution role
-    Default: Lambda-Role-bedrock
+    Default: Lambda-Role-AudioText
   LambdaPolicyName:
     Type: String
     MinLength: '1'
     MaxLength: '128'
     AllowedPattern: '[\w+=,.@-]+'
-    Default: Lambda-Policy-bedrock
-  BucketName:
+    Default: Lambda-Policy-AudioText
+  S3BucketName:
+    Type: String
+    Default: AudioText
+  LambdaBucketName:
     Type: String
     MinLength: '3'
     MaxLength: '255'
     Description: The name of the bucket where object  need to be download
-    Default: bsourceprompt
+    Default: Lambda-AudioText-Bucket
   KeyName:
     Type: String
     MinLength: '3'
@@ -42,6 +45,32 @@ Parameters:
     Description: The name of the bucket where object  need to be download
     Default: review.txt
 Resources:
+  TranscriptS3:
+    Type: AWS::S3::Bucket
+    DependsOn: BucketInvokePermission
+    Properties:
+      BucketName: !Ref S3BucketName
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: s3:ObjectCreated:Put
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: suffix
+                    Value: mp3
+            Function: !GetAtt [ LambdaFunction, Arn]
+  BucketInvokePermission:
+    Type: AWS::Lambda::Permission
+    DependsOn: LambdaFunction
+    Properties:
+      FunctionName:
+        Fn::GetAtt:
+          - LambdaFunction
+          - Arn
+      Action: lambda:InvokeFunction
+      Principal: s3.amazonaws.com
+      SourceArn:
+        Fn::Sub: arn:aws:s3:::${S3BucketName}
   LambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -49,7 +78,9 @@ Resources:
       Description: An execution role for a Lambda function launched by CloudFormation
       ManagedPolicyArns:
         - !Ref LambdaPolicy
-        - 'arn:aws:iam::aws:policy/AmazonBedrockFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonTranscribeFullAccess'
+        - 'arn:aws:iam::aws:policy/CloudWatchFullAccess'
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
@@ -88,6 +119,7 @@ Resources:
       RetentionInDays: 30
             
   LambdaFunction:
+    DependsOn: LambdaRole
     Type: AWS::Lambda::Function
     Properties:
       Description: Lambda function to validate the producer data 
@@ -97,13 +129,8 @@ Resources:
       Runtime: python3.12
       Role: !GetAtt 'LambdaRole.Arn'
       Timeout: 480
-      Environment:
-        Variables:
-          SOURCEBUCKET: !Ref BucketName
-          SOURCEFILE: !Ref KeyName
-          SOURCEREVIEW: !Ref KeyReview
       Code:
-        S3Bucket: bsourceprompt
+        S3Bucket: LambdaBucketName
         S3Key: my_deployment_package.zip
                 
     
